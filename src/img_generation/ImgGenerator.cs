@@ -4,16 +4,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// contains values that are used to determine how long a tile will be visible
-/// </summary>
-struct TileTimes
-{
-    public const float VisibleTime = 1.5f;
-    public const float NeighborDelay = 0.2f;
-    public const float AlphaChangeAmt = 0.1f;
-    public const float AlphaChangeDelay = 0.5f;
-}
+
 
 /// <summary>
 /// uses the FastNoiseLite library to generate noise that is the n used to
@@ -21,7 +12,18 @@ struct TileTimes
 /// </summary>
 public partial class ImgGenerator : Node2D
 {
+    public const float VisibleTime = 12f;
+    public const float NeighborDelay = 0.2f;
+    public const float AlphaChangeAmt = 0.1f;
+    public const float AlphaChangeDelay = 0.5f;
+
+    private readonly string[] LightColors = new string[] {
+        "#FFD700", "#FFA500", "#FF8C00", "#FF7F50", "#FF6347", "#FF4500", "#FF0000", "#000000", "#2F4F4F", "#708090", "#696969", "#A9A9A9", "#808080", "#C0C0C0"
+         };
+    private readonly string[] DarkColors = new string[] { "#000000", "#2F4F4F", "#708090", "#696969", "#A9A9A9", "#808080", "#C0C0C0" };
+
     private FastNoiseLite noiseGenerator;
+    private Color[] colorPalette;
     private Dictionary<Vector2, Tile> tiles;
     private Dictionary<Vector2, Tile> fadingTiles;
 
@@ -33,9 +35,12 @@ public partial class ImgGenerator : Node2D
         tiles = new Dictionary<Vector2, Tile>();
         cellSize = new Vector2I(32, 32);
         this.ImgSize = ImgSize;
+        colorPalette = new Color[8];
+        RandomizePalette(false);
 
         //center img based on size
         Position = new Vector2((-ImgSize.X * cellSize.X / 2) + (cellSize.X * .5f), (-ImgSize.Y * cellSize.Y / 2) + (cellSize.Y * .5f));
+
         Generating = false;
         Generated = false;
         Fading = false;
@@ -75,7 +80,7 @@ public partial class ImgGenerator : Node2D
                     Vector2 cords = new Vector2(x, y);
 
                     Color tileColor = GetColorFromHeight(noiseGenerator.GetNoise2D(x, y));
-                    Tile tile = new Tile(this, tileCords, cellSize, tileColor, TileTimes.AlphaChangeAmt, TileTimes.AlphaChangeDelay, TileTimes.NeighborDelay, TileTimes.VisibleTime);
+                    Tile tile = new Tile(this, tileCords, cellSize, tileColor, AlphaChangeAmt, AlphaChangeDelay, NeighborDelay, VisibleTime);
                     tile.FindNeighbors(tiles);
 
                     tiles.Add(cords, tile);
@@ -169,15 +174,57 @@ public partial class ImgGenerator : Node2D
     /// </summary>
     private Color GetColorFromHeight(float height)
     {
+        if (height < -0.75f)
+        {
+            return colorPalette[0];
+        }
+        else if (height < -0.5f)
+        {
+            return colorPalette[1];
+        }
+        else if (height < -0.25f)
+        {
+            return colorPalette[2];
+        }
+        else if (height < 0.0f)
+        {
+            return colorPalette[3];
+        }
+        else if (height < 0.25f)
+        {
+            return colorPalette[4];
+        }
+        else if (height < 0.5f)
+        {
+
+            return colorPalette[5];
+        }
+        else if (height < 0.75f)
+        {
+            return colorPalette[6];
+        }
+        else if (height < 1f)
+        {
+            return colorPalette[7];
+        }
         return new Color(height, height, height, 0);
     }
 
     /// <summary>
     /// randomizes the color palate of the img
     /// </summary>
-    public void RandomizePalate()
+    public void RandomizePalette(bool darkPalette)
     {
+        string[] colors = darkPalette ? DarkColors : LightColors;
+        RandomNumberGenerator rng = new RandomNumberGenerator();
 
+        for (int i = 0; i < colorPalette.Length; i++)
+        {
+            int colorIndex = rng.RandiRange(0, colors.Length - 1);
+            Color color = new Color(colors[colorIndex]);
+            color.A = 0;
+            colorPalette[i] = color;
+        }
     }
 
 

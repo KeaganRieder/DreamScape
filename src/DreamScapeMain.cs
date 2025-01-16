@@ -14,12 +14,12 @@ public partial class DreamScapeMain : Node
 {
     public static readonly Dictionary<string, InputEvent> KeyBindings = new Dictionary<string, InputEvent>
     {
-        {"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}},
-        {"RandomizeSeed", new InputEventKey{PhysicalKeycode = Key.Down}},
-        {"RandomFrequency",  new InputEventKey{PhysicalKeycode = Key.Up}},
-        {"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}},
-        {"DarkPalette", new InputEventKey{PhysicalKeycode = Key.Right}},
-        {"LightPalette",  new InputEventKey{PhysicalKeycode = Key.Left}},
+        {"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, // mouse click
+        {"RandomizeSeed", new InputEventKey{PhysicalKeycode = Key.Down}}, // randomizes seed used by the generator noise
+        {"RandomFrequency",  new InputEventKey{PhysicalKeycode = Key.Up}}, // randomizes frequency used by generator noise
+        {"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}}, // uses last generated img
+        {"DarkPalette", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
+        {"LightPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, // swaps to a Light palette WIP
     };
 
     private ImgGenerator imgGenerator;
@@ -36,8 +36,8 @@ public partial class DreamScapeMain : Node
         NoiseGenerator.Seed = rng.RandiRange(0, 10000);
         NoiseGenerator.Frequency = 0.05f;
         NoiseGenerator.FractalLacunarity = 2.5f;
-        NoiseGenerator.FractalOctaves = 5;
-        NoiseGenerator.FractalGain = 0.5f;
+        NoiseGenerator.FractalOctaves = 6;
+        NoiseGenerator.FractalGain = 0.2f;
 
         AddChild(imgGenerator);
     }
@@ -89,6 +89,7 @@ public partial class DreamScapeMain : Node
             if (Input.IsActionJustPressed("DarkPalette"))
             {
                 GD.Print("Swapping To Dark Palette");
+                imgGenerator.RandomizePalette(true);
                 imgGenerator.Clear();
                 imgGenerator.Generate();
                 imgGenerator.StartFadeEffect();
@@ -97,6 +98,7 @@ public partial class DreamScapeMain : Node
             if (Input.IsActionJustPressed("LightPalette"))
             {
                 GD.Print("Swapping To Light Palette");
+                imgGenerator.RandomizePalette(false);
                 imgGenerator.Clear();
                 imgGenerator.Generate();
                 imgGenerator.StartFadeEffect();
