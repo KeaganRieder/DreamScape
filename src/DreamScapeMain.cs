@@ -2,7 +2,6 @@ namespace DreamScape;
 
 using DreamScape.ImgGeneration;
 using Godot;
-using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -15,11 +14,12 @@ public partial class DreamScapeMain : Node
     public static readonly Dictionary<string, InputEvent> KeyBindings = new Dictionary<string, InputEvent>
     {
         {"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, // mouse click
-        {"RandomizeSeed", new InputEventKey{PhysicalKeycode = Key.Down}}, // randomizes seed used by the generator noise
-        {"RandomFrequency",  new InputEventKey{PhysicalKeycode = Key.Up}}, // randomizes frequency used by generator noise
+        {"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, // makes new random img with perlin noise
+        {"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}}, // randomizes frequency used by generator noise maybe make it cellular noise
+
         {"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}}, // uses last generated img
-        {"DarkPalette", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
-        {"LightPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, // swaps to a Light palette WIP
+        {"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, // swaps to a Light palette WIP
+        {"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
     };
 
     private ImgGenerator imgGenerator;
@@ -27,7 +27,8 @@ public partial class DreamScapeMain : Node
 
     public DreamScapeMain()
     {
-        imgGenerator = new ImgGenerator(new Vector2(64 * 2, 64));
+        Name = "DreamScapeMain";
+        imgGenerator = ImgGenerator.Instance;
         rng = new RandomNumberGenerator();
 
         //setting initial values for noise generator
@@ -35,10 +36,11 @@ public partial class DreamScapeMain : Node
         NoiseGenerator.NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth;
         NoiseGenerator.Seed = rng.RandiRange(0, 10000);
         NoiseGenerator.Frequency = 0.05f;
-        NoiseGenerator.FractalLacunarity = 2.5f;
+        NoiseGenerator.FractalLacunarity = 2f;
         NoiseGenerator.FractalOctaves = 6;
-        NoiseGenerator.FractalGain = 0.2f;
+        NoiseGenerator.FractalGain = 0.4f;
 
+        imgGenerator.Generate();
         AddChild(imgGenerator);
     }
 
@@ -55,53 +57,50 @@ public partial class DreamScapeMain : Node
     {
         if (Input.IsActionPressed("PlayAmbientMusic"))
         {
-            GD.Print("Playing Ambient Music");
+            GD.Print("Playing Ambient Music WIP"); //maybe make this also have the img no fade in or out
         }
     }
 
     public override void _UnhandledInput(InputEvent inputEvent)
     {
-        if (!imgGenerator.Fading && !imgGenerator.Generating)
+        if (imgGenerator.State == ImgGeneratorState.Idle)
         {
-            if (Input.IsActionJustPressed("RandomizeSeed"))
+            if (Input.IsActionJustPressed("NewPerlinDream"))
             {
+                GD.Print("New Perlin Dream");
+                rng = new RandomNumberGenerator();
                 imgGenerator.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-                GD.Print("New Seed");
-                imgGenerator.Clear();
                 imgGenerator.Generate();
+            }
+
+            else if (Input.IsActionJustPressed("NewDream"))
+            {
+                GD.Print("New Dream");
+                rng = new RandomNumberGenerator();
+                imgGenerator.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+                imgGenerator.RandomizePalette();
+                imgGenerator.Generate();
+            }
+
+            else if (Input.IsActionJustPressed("MostRecentDream"))
+            {
+                GD.Print("Using most recent dream");
                 imgGenerator.StartFadeEffect();
             }
 
-            if (Input.IsActionJustPressed("RandomFrequency"))
+            else if (Input.IsActionJustPressed("NewPalette"))
             {
-                GD.Print("Random Frequency");
-                imgGenerator.Clear();
+                GD.Print("different toned Dream");
+                imgGenerator.RandomizePalette();
                 imgGenerator.Generate();
-                imgGenerator.StartFadeEffect();
             }
 
-            if (Input.IsActionJustPressed("MostRecentDream"))
+            else if (Input.IsActionJustPressed("InvertedDream"))
             {
-                imgGenerator.Generate();//if generated will just fade
-                imgGenerator.StartFadeEffect();
-            }
-
-            if (Input.IsActionJustPressed("DarkPalette"))
-            {
-                GD.Print("Swapping To Dark Palette");
-                imgGenerator.RandomizePalette(true);
-                imgGenerator.Clear();
+                GD.Print("Inverting Dream - WIP");
+                imgGenerator.InvertPalette();
                 imgGenerator.Generate();
-                imgGenerator.StartFadeEffect();
-            }
 
-            if (Input.IsActionJustPressed("LightPalette"))
-            {
-                GD.Print("Swapping To Light Palette");
-                imgGenerator.RandomizePalette(false);
-                imgGenerator.Clear();
-                imgGenerator.Generate();
-                imgGenerator.StartFadeEffect();
             }
         }
 
