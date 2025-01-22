@@ -5,6 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+/// <summary>
+/// used to check the tiles state
+/// </summary>
+// public enum TileStateOld
+// {
+//     Undefined = 0,
+//     Idle = 1,
+//     FadingIn = 2,
+//     FadingToNextColor = 3,
+//     FadingOut = 4,
+//     FadingDone = 5,
+//     FadeInByNeighbors = 6,
+//     FadeOutByNeighbors = 7,
+// }
 
 /// <summary>
 /// used to check the tiles state
@@ -13,14 +27,11 @@ public enum TileState
 {
     Undefined = 0,
     Idle = 1,
-    NeedingColorBlended = 2,
-    FadingIn = 3,
+    FadingIn = 2,
+    FadeToNextColor = 3,
     FadingOut = 4,
-    FadingDone = 5,
-    FadeInByNeighbors = 6,
-    FadeOutByNeighbors = 7,
-
 }
+
 
 public partial class Tile : Sprite2D
 {
@@ -30,19 +41,24 @@ public partial class Tile : Sprite2D
     private ImgGenerator imgGenerator;
 
     private Vector2I graphicSize;
-    private Color tileColor;
+
+    private Color fadedTileColor;
+    private Color currentTileColor;
+    private Color newTileColor;
 
     public Tile(ImgGenerator imgGenerator, Vector2 position, Color color)
     {
         Name = $"Tile {position}";
-        State = TileState.Undefined;
+        State = TileState.Idle;
 
         graphicSize = new Vector2I(ImgConstants.CellSize, ImgConstants.CellSize);
 
         globalPosition = new Vector2I(Mathf.FloorToInt(position.X / graphicSize.X), Mathf.FloorToInt(position.Y / graphicSize.Y));
         Position = position;
         this.imgGenerator = imgGenerator;
+
         TileColor = color;
+        fadedTileColor = Colors.Black;
 
         neighbors = new Dictionary<Vector2, Tile>();
     }
@@ -51,43 +67,37 @@ public partial class Tile : Sprite2D
     /// the state of the tile
     /// </summary>
     public TileState State { get; set; }
+
     /// <summary>
     /// the color of the tile
     /// </summary>
     public Color TileColor
     {
-        get => tileColor; set
+        get => currentTileColor;
+        private set
         {
-            State = TileState.NeedingColorBlended;
-            tileColor = value;
-            tileColor.A = 0;
-            Modulate = tileColor;
+            ColorNeedingBlended = true;
+            currentTileColor = value;
         }
     }
+
+    /// <summary>
+    /// used to track wether or not tiles colors needs to be blended
+    /// with it's neighbors
+    /// </summary>
+    public bool ColorNeedingBlended { get; private set; }
+
+    /// <summary>
+    /// used to track if the tile fade was started by a neighbor
+    /// </summary>
+    public bool FadeStartedByNeighbor { get; private set; }
+
     /// <summary>
     /// the timer used to delay the fade in or out of the tile
     /// </summary>
     public Timer TileDelayTimer { get; private set; }
 
-    /// <summary>
-    /// runs when node is added to the scene
-    /// </summary>
     public override void _Ready()
-    {
-        ReadTexture();
-
-        TileDelayTimer = new Timer();
-        AddChild(TileDelayTimer);
-        TileDelayTimer.Timeout += () => FadeTile(State);
-
-        State = TileState.Idle;
-        base._Ready();
-    }
-
-    /// <summary>
-    /// reads and sets texture of the tile form the file location
-    /// </summary>
-    public void ReadTexture()
     {
         if (File.Exists(ImgConstants.IMG_PATH))
         {
@@ -106,6 +116,25 @@ public partial class Tile : Sprite2D
         {
             GD.Print("File Doesn't exists");
         }
+
+        TileDelayTimer = new Timer();
+        AddChild(TileDelayTimer);
+        TileDelayTimer.Timeout += () => FadeTileOld(State);
+
+        State = TileStateOld.Idle;
+        base._Ready();
+    }
+
+    /// <summary>
+    /// sets the next color the tile will fade into
+    /// </summary>
+    public void SetNextColor(Color color)
+    {
+        if (newTileColor == color)
+        {
+            return;
+        }
+        newTileColor = color;
     }
 
     /// <summary>
@@ -113,7 +142,7 @@ public partial class Tile : Sprite2D
     /// </summary>
     public void BlendColorWithNeighbors()
     {
-        State = TileState.Idle; // make sure it doesn't get ran again
+        ColorNeedingBlended = false;
 
         Color blendedColor = TileColor;
         blendedColor.A = 0.5f;
@@ -128,7 +157,7 @@ public partial class Tile : Sprite2D
                 blendedColor = blendedColor.Blend(colorToBlend);
             }
 
-            if (neighbor.State == TileState.NeedingColorBlended)
+            if (neighbor.ColorNeedingBlended)
             {
                 neighbor.BlendColorWithNeighbors();
             }
@@ -136,7 +165,6 @@ public partial class Tile : Sprite2D
 
         blendedColor.A = 0;
         TileColor = blendedColor;
-        State = TileState.Idle; // ensure it's marked as idle
     }
 
     /// <summary>
@@ -168,14 +196,6 @@ public partial class Tile : Sprite2D
     }
 
     /// <summary>
-    /// returns if their is a neighbor of the tile at the given coords
-    /// </summary>
-    public bool HasNeighbor(Vector2 coords)
-    {
-        return neighbors.ContainsKey(coords);
-    }
-
-    /// <summary>
     /// sets neighbor of the tile at the given coords
     /// </summary>
     public void SetNeighbor(Vector2 coords, Tile tile)
@@ -189,51 +209,90 @@ public partial class Tile : Sprite2D
     /// <summary>
     /// begins the tiles and it's neighbors fade in or out effect
     /// </summary>
-    public void FadeTile(TileState state)
+    public void FadeTileOld(TileState tileState)
     {
         if (!TileDelayTimer.IsStopped())
         {
             TileDelayTimer.Stop();
         }
 
-        if (State == TileState.NeedingColorBlended)
+        if (ColorNeedingBlended)
         {
             BlendColorWithNeighbors();
         }
 
-        switch (state)
+        switch (tileState)
         {
             case TileState.FadingIn:
-            case TileState.FadeInByNeighbors:
-                if (State == TileState.Idle || State == TileState.FadeInByNeighbors)
-                {
-                    State = TileState.FadingIn;
-                    StartNeighbors();
-                }
-                imgGenerator.State = ImgGeneratorState.Fading;
                 FadeIn();
                 break;
 
-            case TileState.FadingOut:
-            case TileState.FadeOutByNeighbors:
-                if (State == TileState.Idle || State == TileState.FadeOutByNeighbors)
-                {
-                    State = TileState.FadingOut;
-                    StartNeighbors();
-                }
-                imgGenerator.State = ImgGeneratorState.Fading;
-                FadeOut();
+            case TileState.FadeToNextColor:
+                FadeToNextColor();
                 break;
 
-            case TileState.FadingDone:
+            case TileState.FadingOut:
+                FadeOut();
+                break;
+            case TileState.Idle:
                 TileDelayTimer.Stop();
                 State = TileState.Idle;
                 imgGenerator.State = ImgGeneratorState.Idle;
                 break;
 
             default:
-                GD.PrintErr($"Invalid State: {state} for tile {globalPosition}");
+                GD.PrintErr($"Invalid State: {tileState} for tile {globalPosition}");
                 break;
+        }
+
+        // switch (state)
+        // {
+        //     case TileState.FadingIn:
+        //     case TileState.FadeInByNeighbors:
+        //         if (State == TileState.Idle || State == TileState.FadeInByNeighbors)
+        //         {
+        //             State = TileState.FadingIn;
+        //             StartNeighbors();
+        //         }
+        //         imgGenerator.State = ImgGeneratorState.Fading;
+        //         FadeIn();
+        //         break;
+
+        //     case TileState.FadingOut:
+        //     case TileState.FadeOutByNeighbors:
+        //         if (State == TileState.Idle || State == TileState.FadeOutByNeighbors)
+        //         {
+        //             State = TileState.FadingOut;
+        //             StartNeighbors();
+        //         }
+        //         imgGenerator.State = ImgGeneratorState.Fading;
+        //         FadeOut();
+        //         break;
+        //     case TileState.Idle:
+        //     case TileState.FadingDone:
+        //         TileDelayTimer.Stop();
+        //         State = TileState.Idle;
+        //         imgGenerator.State = ImgGeneratorState.Idle;
+        //         break;
+
+        //     
+        // }
+    }
+
+    /// <summary>
+    /// begins the tiles and it's neighbors fade in or out effect
+    /// </summary>
+    public void FadeTile()
+    {
+        // if (!TileDelayTimer.IsStopped())
+        // {
+        //     //make sure when called the timer is stopped
+        //     TileDelayTimer.Stop();
+        // }
+
+        if (ColorNeedingBlended)
+        {
+            BlendColorWithNeighbors();
         }
     }
 
@@ -246,20 +305,28 @@ public partial class Tile : Sprite2D
         {
             if (neighbor.State == TileState.Idle)
             {
-                if (State == TileState.FadingIn)
-                {
-                    neighbor.State = TileState.FadeInByNeighbors;
-                }
-                else if (State == TileState.FadingOut)
-                {
-                    neighbor.State = TileState.FadeOutByNeighbors;
-                }
-                // neighbor.State = State;
                 if (neighbor.TileDelayTimer.IsStopped())
                 {
                     neighbor.TileDelayTimer.Start(ImgConstants.NeighborDelay);
                 }
             }
+
+            // if (neighbor.State == TileStateOld.Idle)
+            // {
+            //     if (State == TileStateOld.FadingIn)
+            //     {
+            //         neighbor.State = TileStateOld.FadeInByNeighbors;
+            //     }
+            //     else if (State == TileStateOld.FadingOut)
+            //     {
+            //         neighbor.State = TileStateOld.FadeOutByNeighbors;
+            //     }
+
+            //     if (neighbor.TileDelayTimer.IsStopped())
+            //     {
+            //         neighbor.TileDelayTimer.Start(ImgConstants.NeighborDelay);
+            //     }
+            // }
         }
     }
 
@@ -268,25 +335,51 @@ public partial class Tile : Sprite2D
     /// </summary>
     private void FadeIn()
     {
-        tileColor.A += ImgConstants.FadeInAmt;
+        // currentTileColor.A += ImgConstants.FadeInAmt;
 
-        if (tileColor.A >= 1)
-        {
-            tileColor.A = 1;
+        // if (currentTileColor.A >= 1)
+        // {
+        //     currentTileColor.A = 1;
 
-            State = TileState.FadingOut;
-            TileDelayTimer.Stop();
-            TileDelayTimer.Start(ImgConstants.VisibleTime);
-        }
+        //     State = TileState.FadingOut;
+        //     TileDelayTimer.Stop();
+        //     TileDelayTimer.Start(ImgConstants.VisibleTime);
+        // }
 
-        else
-        {
-            if (TileDelayTimer.IsStopped())
-            {
-                TileDelayTimer.Start(ImgConstants.FadeInDelay);
-            }
-        }
-        Modulate = tileColor;
+        // else
+        // {
+        //     if (TileDelayTimer.IsStopped())
+        //     {
+        //         TileDelayTimer.Start(ImgConstants.FadeInDelay);
+        //     }
+        // }
+        // Modulate = currentTileColor;
+    }
+
+    /// <summary>
+    /// fades the tile to the next color
+    /// </summary>
+    private void FadeToNextColor()
+    {
+        // currentTileColor.A -= ImgConstants.FadeOutAmt;
+
+        // if (currentTileColor.A <= 0)
+        // {
+        //     // GD.Print("Now Idle");
+
+        //     currentTileColor.A = 0;
+        //     TileDelayTimer.Stop();
+
+        //     FadeTile(TileState.FadingDone);
+        // }
+        // else
+        // {
+        //     if (TileDelayTimer.IsStopped())
+        //     {
+        //         TileDelayTimer.Start(ImgConstants.FadeOutDelay);
+        //     }
+        // }
+        // Modulate = currentTileColor;
     }
 
     /// <summary>
@@ -294,25 +387,23 @@ public partial class Tile : Sprite2D
     /// </summary>
     private void FadeOut()
     {
-        tileColor.A -= ImgConstants.FadeOutAmt;
+        // currentTileColor.A -= ImgConstants.FadeOutAmt;
 
-        if (tileColor.A <= 0)
-        {
-            // GD.Print("Now Idle");
+        // if (currentTileColor.A <= 0)
+        // {
+        //     currentTileColor.A = 0;
+        //     TileDelayTimer.Stop();
 
-            tileColor.A = 0;
-            TileDelayTimer.Stop();
-
-            FadeTile(TileState.FadingDone);
-        }
-        else
-        {
-            if (TileDelayTimer.IsStopped())
-            {
-                TileDelayTimer.Start(ImgConstants.FadeOutDelay);
-            }
-        }
-        Modulate = tileColor;
+        //     FadeTile(TileState.FadingDone);
+        // }
+        // else
+        // {
+        //     if (TileDelayTimer.IsStopped())
+        //     {
+        //         TileDelayTimer.Start(ImgConstants.FadeOutDelay);
+        //     }
+        // }
+        // Modulate = currentTileColor;
     }
 
 }

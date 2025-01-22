@@ -14,6 +14,7 @@ public enum ImgGeneratorState
     Fading = 2, // set when img is fading
     Idle = 3, // set when img is not doing anything
 }
+
 /// <summary>
 /// uses the FastNoiseLite library to generate noise that is the n used to
 /// create an abstract img
@@ -33,6 +34,7 @@ public partial class ImgGenerator : Node2D
     private FastNoiseLite noiseGenerator;
     private Color[] colorPalette;
     private readonly Dictionary<Vector2, Tile> tiles;
+    private Vector2 imgFadeOrigins;
 
     public ImgGenerator(Vector2 ImgSize)
     {
@@ -49,7 +51,7 @@ public partial class ImgGenerator : Node2D
             (-ImgSize.X * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f),
             (-ImgSize.Y * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f)
         );
-
+        imgFadeOrigins = new Vector2(-1, -1);
         State = ImgGeneratorState.New;
     }
 
@@ -70,6 +72,7 @@ public partial class ImgGenerator : Node2D
     /// </summary>
     public Vector2 ImgSize { get; set; }
 
+ 
 
     /// <summary>
     /// generates a dream scape img form the noise map and other settings
@@ -92,7 +95,6 @@ public partial class ImgGenerator : Node2D
                     tiles.Add(cords, tile);
 
                     AddChild(tile);
-
                 }
             }
             tiles[new Vector2(0, 0)].BlendColorWithNeighbors();
@@ -108,7 +110,7 @@ public partial class ImgGenerator : Node2D
                 {
                     Vector2 cords = new Vector2(x, y);
                     Color tileColor = GetColorTileColor(noiseGenerator.GetNoise2D(x, y));
-                    tiles[cords].TileColor = tileColor;
+                    tiles[cords].SetNextColor(tileColor);
                 }
             }
             tiles[new Vector2(0, 0)].BlendColorWithNeighbors();
@@ -135,12 +137,37 @@ public partial class ImgGenerator : Node2D
 
             if (tiles.ContainsKey(cord))
             {
-                tiles[cord].FadeTile(TileState.FadingIn);
+                // tiles[cord].FadeTile(TileStateOld.FadingIn);
             }
             else
             {
                 GD.PrintErr($"Tile at {cord} not found");
             }
+        }
+    }
+
+    public void FadeImg()
+    {
+        if (imgFadeOrigins == new Vector2(-1, -1))
+        {
+            RandomNumberGenerator rng = new RandomNumberGenerator();
+            int xCoord = rng.RandiRange(0, (int)ImgSize.X - 1);
+            int yCoord = rng.RandiRange(0, (int)ImgSize.Y - 1);
+            imgFadeOrigins = new Vector2(xCoord, yCoord);
+        }
+    }
+
+    /// <summary>
+    /// fades out the img
+    /// </summary>
+    public void FadeOutImg()
+    {
+        if (imgFadeOrigins == new Vector2(-1, -1))
+        {
+            RandomNumberGenerator rng = new RandomNumberGenerator();
+            int xCoord = rng.RandiRange(0, (int)ImgSize.X - 1);
+            int yCoord = rng.RandiRange(0, (int)ImgSize.Y - 1);
+            imgFadeOrigins = new Vector2(xCoord, yCoord);
         }
     }
 
@@ -185,7 +212,7 @@ public partial class ImgGenerator : Node2D
     /// </summary>
     public void InvertPalette()
     {
-       Color[] oldPalette = colorPalette;
+        Color[] oldPalette = colorPalette;
 
         colorPalette = new Color[8];
 
