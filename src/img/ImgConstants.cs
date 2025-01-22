@@ -1,4 +1,4 @@
-namespace DreamScape.ImgGeneration;
+namespace DreamScape.Img;
 
 /// <summary>
 /// class contains constants for the img generation
@@ -11,13 +11,20 @@ public static class ImgConstants
     public const float FadeInAmt = 0.1f;
     public const float FadeOutAmt = 0.1f;
 
+<<<<<<< Updated upstream:src/img_generation/ImgConstants.cs
     public const float FadeOutDelay = 0.01f;
     public const float FadeInDelay = 0.1f;
     public const float VisibleTime = 8f;
+=======
+    public const float FadeOutDelay = 0.0f;
+    public const float FadeDelay = 0.3f;
+    public const float VisibleTime = 12f;
+>>>>>>> Stashed changes:src/img/ImgConstants.cs
     public const float NeighborDelay = 0.2f;
 
 
     //generation values
+<<<<<<< Updated upstream:src/img_generation/ImgConstants.cs
     public const int ImgWidth = 28;
     public const int imgHeight = 16;
 
@@ -39,4 +46,18 @@ public static class ImgConstants
 
 
 
+=======
+    public const int ImgWidth = 16;
+    public const int imgHeight = 16;
+
+    public const int CellSize = 34;
+    
+    public static string[] Colors = new string[] {
+        "#FFD700",         "#FFA500",         "#FF8C00",
+        "#FF7F50",         "#FF6347",         "#FF4500",
+        "#FF0000",         "#000000",         "#2F4F4F",
+        "#708090",         "#696969",         "#A9A9A9",
+        "#808080",         "#C0C0C0"
+    };    
+>>>>>>> Stashed changes:src/img/ImgConstants.cs
 }

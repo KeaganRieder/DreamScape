@@ -1,10 +1,11 @@
-namespace DreamScape.ImgGeneration;
+namespace DreamScape.Img;
 
 using Godot;
 using System;
 using System.Collections.Generic;
 
 /// <summary>
+<<<<<<< Updated upstream:src/img_generation/ImgGenerator.cs
 /// an enum that is used to track the img generators state
 /// </summary>
 public enum ImgGeneratorState
@@ -16,12 +17,19 @@ public enum ImgGeneratorState
 }
 
 /// <summary>
+=======
+>>>>>>> Stashed changes:src/img/DreamScapeImg.cs
 /// uses the FastNoiseLite library to generate noise that is the n used to
 /// create an abstract img
 /// </summary>
 public partial class ImgGenerator : Node2D
 {
+    public const int ColorPaletteSize = 5;
     private static ImgGenerator instance;
+
+    /// <summary>
+    /// instance of the object
+    /// </summary>
     public static ImgGenerator Instance
     {
         get
@@ -32,34 +40,41 @@ public partial class ImgGenerator : Node2D
     }
 
     private FastNoiseLite noiseGenerator;
+
     private Color[] colorPalette;
     private readonly Dictionary<Vector2, Tile> tiles;
     private Vector2 imgFadeOrigins;
 
-    public ImgGenerator(Vector2 ImgSize)
+    private ImgGenerator(Vector2 ImgSize)
     {
-        Name = "ImgGenerator";
-        noiseGenerator = new FastNoiseLite();
-        tiles = new Dictionary<Vector2, Tile>();
-
+        Name = "DreamScapeImg";
         this.ImgSize = ImgSize;
-        colorPalette = new Color[8];
-        RandomizePalette();
 
-        //center img based on size
+        tiles = new Dictionary<Vector2, Tile>();
+        colorPalette = new Color[ColorPaletteSize];
+        noiseGenerator = new FastNoiseLite();
+
+        //centering the img
         Position = new Vector2(
+<<<<<<< Updated upstream:src/img_generation/ImgGenerator.cs
             (-ImgSize.X * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f),
             (-ImgSize.Y * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f)
         );
         imgFadeOrigins = new Vector2(-1, -1);
         State = ImgGeneratorState.New;
+=======
+                    (-ImgSize.X * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f),
+                    (-ImgSize.Y * ImgConstants.CellSize / 2) + (ImgConstants.CellSize * .5f)
+                );
+
+        DreamScapeState = DreamScapeStates.Instance;
+>>>>>>> Stashed changes:src/img/DreamScapeImg.cs
     }
 
     /// <summary>
-    /// the state of the img generator, meant to be used to 
-    /// see what the img generator is currently doing
+    /// The State The img generator is in
     /// </summary>
-    public ImgGeneratorState State { get; set; }
+    public DreamScapeStates DreamScapeState { get; private set; }
 
     /// <summary>
     /// the noise generator used to create the img
@@ -67,19 +82,23 @@ public partial class ImgGenerator : Node2D
     public FastNoiseLite NoiseGenerator { get => noiseGenerator; set => noiseGenerator = value; }
 
     /// <summary>
-    /// determines how many tile will be used to make the width a
-    /// nd height of  the dream scape img
+    /// determines how many tile will be used to make the width 
+    /// and height of  the dream scape img
     /// </summary>
+<<<<<<< Updated upstream:src/img_generation/ImgGenerator.cs
     public Vector2 ImgSize { get; set; }
 
  
+=======
+    public Vector2 ImgSize { get; private set; }
+>>>>>>> Stashed changes:src/img/DreamScapeImg.cs
 
     /// <summary>
     /// generates a dream scape img form the noise map and other settings
     /// </summary>
     public void Generate()
     {
-        if (State == ImgGeneratorState.New)
+        if (DreamScapeState.ImgState == ImgState.New)
         {
             for (int x = 0; x < ImgSize.X; x++)
             {
@@ -98,10 +117,10 @@ public partial class ImgGenerator : Node2D
                 }
             }
             tiles[new Vector2(0, 0)].BlendColorWithNeighbors();
-            State = ImgGeneratorState.Idle;
+            DreamScapeState.ImgState = ImgState.Idle;
         }
 
-        else if (State == ImgGeneratorState.Idle)
+        else if (DreamScapeState.ImgState == ImgState.Idle)
         {
             GD.Print("Regenerating");
             for (int x = 0; x < ImgSize.X; x++)
@@ -114,6 +133,7 @@ public partial class ImgGenerator : Node2D
                 }
             }
             tiles[new Vector2(0, 0)].BlendColorWithNeighbors();
+<<<<<<< Updated upstream:src/img_generation/ImgGenerator.cs
             State = ImgGeneratorState.Idle;
             StartFadeEffect();
         }
@@ -143,6 +163,9 @@ public partial class ImgGenerator : Node2D
             {
                 GD.PrintErr($"Tile at {cord} not found");
             }
+=======
+            DreamScapeState.ImgState = ImgState.Idle;
+>>>>>>> Stashed changes:src/img/DreamScapeImg.cs
         }
     }
 
@@ -176,19 +199,42 @@ public partial class ImgGenerator : Node2D
     /// </summary>
     private Color GetColorTileColor(float height)
     {
-        return height switch
+        // if (height < -0.75)
+        // {
+        //     return colorPalette[0];
+        // }
+        if (height < -0.5)
         {
-            float h when h < -0.75f => colorPalette[0],
-            float h when h < -0.5f => colorPalette[1],
-            float h when h < -0.25f => colorPalette[2],
-            float h when h < 0.0f => colorPalette[3],
-            float h when h < 0.25f => colorPalette[4],
-            float h when h < 0.5f => colorPalette[5],
-            float h when h < 0.75f => colorPalette[6],
-            float h when h <= 1f => colorPalette[7],
-            _ => new Color(height, height, height, 0),
-        };
+            return colorPalette[0];
+        }
+
+        else if (height < -0.25)
+        {
+            return colorPalette[1];
+        }
+
+        else if (height < 0)
+        {
+            return colorPalette[2];
+        }
+
+        else if (height < 0.25)
+        {
+            return colorPalette[3];
+        }
+
+        else if (height < 0.5)
+        {
+            return colorPalette[4];
+        }
+
+        else
+        {
+            return new Color(height, height, height, 0);
+        }
     }
+
+
 
     /// <summary>
     /// randomizes the color palate of the img
@@ -196,9 +242,9 @@ public partial class ImgGenerator : Node2D
     public void RandomizePalette()
     {
         RandomNumberGenerator rng = new RandomNumberGenerator();
-        colorPalette = new Color[8];
+        colorPalette = new Color[ColorPaletteSize];
 
-        for (int i = 0; i < colorPalette.Length; i++)
+        for (int i = 0; i < ColorPaletteSize; i++)
         {
             int colorIndex = rng.RandiRange(0, ImgConstants.Colors.Length - 1);
             Color color = new(ImgConstants.Colors[colorIndex]);
@@ -214,13 +260,11 @@ public partial class ImgGenerator : Node2D
     {
         Color[] oldPalette = colorPalette;
 
-        colorPalette = new Color[8];
+        colorPalette = new Color[ColorPaletteSize];
 
-        for (int i = 0; i < colorPalette.Length; i++)
+        for (int i = 0; i < ColorPaletteSize; i++)
         {
-            colorPalette[i] = oldPalette[colorPalette.Length - 1 - i];
+            colorPalette[i] = oldPalette[ColorPaletteSize - 1 - i];
         }
     }
-
-
 }
