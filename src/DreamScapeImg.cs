@@ -95,6 +95,7 @@ public partial class DreamScapeImg : Node2D
         else if (State.ImgState == ImgState.Idle)
         {
             GD.Print("Regenerating");
+
             for (int x = 0; x < ImgSize.X; x++)
             {
                 for (int y = 0; y < ImgSize.Y; y++)

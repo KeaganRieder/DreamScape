@@ -8,11 +8,11 @@ public static class ImgConstants
     //tile values
     public const string IMG_PATH = "assets/textures/tile.png";
 
-    public const float FadeInAmt = 0.2f;
-    public const float FadeOutAmt = 0.2f;
+    public const float FadeInAmt = 0.1f;
+    public const float FadeOutAmt = 0.1f;
 
     public const float FadeOutDelay = 0.1f;
-    public const float FadeDelay = 0.5f;
+    public const float FadeDelay = 0.2f;
     public const float VisibleTime = 12f;
     public const float NeighborDelay = 0.2f;
 
@@ -21,7 +21,6 @@ public static class ImgConstants
     public const int imgHeight = 12;
     //   public const int ImgWidth = 5;
     // public const int imgHeight = 5;
-
 
     public const int CellSize = 42;
 

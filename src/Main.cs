@@ -100,6 +100,7 @@ public partial class Main : Node
                 GD.Print("New Perlin Dream");
                 rng = new RandomNumberGenerator();
                 image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+                image.RandomizePalette();
                 image.Generate();
                 image.StartFadeEffect();
             }
@@ -121,7 +122,6 @@ public partial class Main : Node
                     GD.Print("New Perlin Dream");
                     rng = new RandomNumberGenerator();
                     image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-                    image.RandomizePalette();
                     image.Generate();
                     image.StartFadeEffect();
                 }
@@ -135,14 +135,16 @@ public partial class Main : Node
             else if (Input.IsActionJustPressed("NewPalette"))
             {
                 GD.Print("different toned Dream");
-                image.RandomizePalette();
+                image.Generate();
+
                 image.StartFadeEffect();
             }
 
             else if (Input.IsActionJustPressed("InvertedDream"))
             {
-                GD.Print("Inverting Dream - WIP");
+                GD.Print("Inverting Dream");
                 image.InvertPalette();
+                image.Generate();
                 image.StartFadeEffect();
             }
         }

@@ -64,7 +64,7 @@ public partial class Tile : Sprite2D
     /// </summary>
     public TileState State { get; set; }
 
-    public TileFadeType FadeType { get; private set; }
+    public TileFadeType TileFadeType { get; private set; }
 
     /// <summary>
     /// the color of the tile
@@ -75,10 +75,18 @@ public partial class Tile : Sprite2D
 
         set
         {
-            ColorNeedingBlended = false;
-            value.A = .5f;
-            nextColor = value;
-            nextColorFadeAmount = 0;
+            if (States.Instance.FadeMode == FadeType.CycleFade)
+            {
+                ColorNeedingBlended = false;
+                value.A = .5f;
+                nextColor = value;
+                nextColorFadeAmount = 0;
+            }
+            else
+            {
+                currentColor = value;
+                // Modulate = currentColor;
+            }
         }
     }
 
@@ -139,55 +147,55 @@ public partial class Tile : Sprite2D
     /// </summary>
     public void BlendColorWithNeighbors()
     {
-        if (ColorNeedingBlended)
-        {
-            ColorNeedingBlended = false;
+        // if (ColorNeedingBlended)
+        // {
+        //     ColorNeedingBlended = false;
 
-            if (IsNewTile)
-            {
-                Color blendedColor = currentColor;
-                blendedColor.A = 0.5f;
-                foreach (var neighbor in neighbors.Values)
-                {
-                    if (neighbor.ColorNeedingBlended)
-                    {
-                        neighbor.BlendColorWithNeighbors();
-                    }
+        //     if (IsNewTile)
+        //     {
+        //         Color blendedColor = currentColor;
+        //         blendedColor.A = 0.5f;
+        //         foreach (var neighbor in neighbors.Values)
+        //         {
+        //             if (neighbor.ColorNeedingBlended)
+        //             {
+        //                 neighbor.BlendColorWithNeighbors();
+        //             }
 
-                    Color colorToBlend = neighbor.currentColor;
-                    colorToBlend.A = 0.5f;
+        //             Color colorToBlend = neighbor.currentColor;
+        //             colorToBlend.A = 0.5f;
 
-                    if (blendedColor != colorToBlend)
-                    {
-                        blendedColor = blendedColor.Blend(colorToBlend);
-                    }
-                }
-                currentColor = blendedColor;
-                IsNewTile = false;
-            }
+        //             if (blendedColor != colorToBlend)
+        //             {
+        //                 blendedColor = blendedColor.Blend(colorToBlend);
+        //             }
+        //         }
+        //         currentColor = blendedColor;
+        //         IsNewTile = false;
+        //     }
 
-            else
-            {
-                // Color blendedColor = newColor;
-                // blendedColor.A = 0.5f;
-                // foreach (var neighbor in neighbors.Values)
-                // {
-                //     if (neighbor.ColorNeedingBlended)
-                //     {
-                //         neighbor.BlendColorWithNeighbors();
-                //     }
+        //     else
+        //     {
+        //         // Color blendedColor = newColor;
+        //         // blendedColor.A = 0.5f;
+        //         // foreach (var neighbor in neighbors.Values)
+        //         // {
+        //         //     if (neighbor.ColorNeedingBlended)
+        //         //     {
+        //         //         neighbor.BlendColorWithNeighbors();
+        //         //     }
 
-                //     Color colorToBlend = neighbor.newColor;
-                //     colorToBlend.A = 0.5f;
+        //         //     Color colorToBlend = neighbor.newColor;
+        //         //     colorToBlend.A = 0.5f;
 
-                //     if (blendedColor != colorToBlend)
-                //     {
-                //         blendedColor = blendedColor.Blend(colorToBlend);
-                //     }
-                // }
-                // newColor = blendedColor;
-            }
-        }
+        //         //     if (blendedColor != colorToBlend)
+        //         //     {
+        //         //         blendedColor = blendedColor.Blend(colorToBlend);
+        //         //     }
+        //         // }
+        //         // newColor = blendedColor;
+        //     }
+        // }
     }
 
     /// <summary>
@@ -239,7 +247,7 @@ public partial class Tile : Sprite2D
             if (neighbor.State == TileState.Idle && neighbor.TileDelayTimer.IsStopped())
             {
                 neighbor.State = TileState.StartedByNeighbors;
-                neighbor.FadeType = FadeType;
+                neighbor.TileFadeType = TileFadeType;
                 neighbor.TileDelayTimer.Start(ImgConstants.NeighborDelay);
             }
         }
@@ -252,7 +260,7 @@ public partial class Tile : Sprite2D
     {
         if (State == TileState.Idle)
         {
-            FadeType = fadeType;
+            TileFadeType = fadeType;
             State = TileState.Fading;
             StartNeighbors();
             FadeTile();
@@ -281,17 +289,17 @@ public partial class Tile : Sprite2D
 
         else if (State == TileState.Fading)
         {
-            if (FadeType == TileFadeType.FadeIn)
+            if (TileFadeType == TileFadeType.FadeIn)
             {
                 FadeIn();
             }
 
-            else if (FadeType == TileFadeType.FadeOut)
+            else if (TileFadeType == TileFadeType.FadeOut)
             {
                 FadeOut();
             }
 
-            else if (FadeType == TileFadeType.FadeToNextColor)
+            else if (TileFadeType == TileFadeType.FadeToNextColor)
             {
                 FadeToNextColor();
             }
@@ -304,7 +312,15 @@ public partial class Tile : Sprite2D
         if (currentColor.A >= 1)
         {
             currentColor.A = 1;
-            State = TileState.Idle;
+            if (States.Instance.FadeMode == FadeType.DefaultFade)
+            {
+                TileFadeType = TileFadeType.FadeOut;
+                State = TileState.StartedByNeighbors;
+            }
+            else
+            {
+                State = TileState.Idle;
+            }
         }
         else
         {
