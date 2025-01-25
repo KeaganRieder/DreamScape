@@ -1,4 +1,4 @@
-namespace DreamScape;
+namespace DreamScape.img;
 
 using Godot;
 using System;

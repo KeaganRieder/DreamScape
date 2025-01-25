@@ -1,4 +1,4 @@
-namespace DreamScape;
+namespace DreamScape.img;
 
 /// <summary>
 /// class contains constants for the img generation

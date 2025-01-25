@@ -1,6 +1,6 @@
-using Godot;
-
 namespace DreamScape;
+
+using Godot;
 
 /// <summary>
 /// tracks teh state of the image
@@ -49,6 +49,11 @@ public class States
     }
 
     /// <summary>
+    /// used to activate debugging
+    /// </summary>
+    public bool Debugging { get; set; } = false;
+
+    /// <summary>
     /// the current state of the dreamScape img
     /// </summary>
     public ImgState ImgState { get; set; }
@@ -80,9 +85,12 @@ public class States
         {
             if (TilesFading <= TilesDoneFading)
             {
-                // GD.Print("Tiles Fading: " + TilesFading + " Tiles Done Fading: " + TilesDoneFading);
 
-                GD.Print("All Tiles Done Fading");
+                if (Debugging)
+                {
+                    GD.Print("Tiles Fading: " + TilesFading + " Tiles Done Fading: " + TilesDoneFading);
+                    GD.Print("All Tiles Done Fading");
+                }
                 ImgState = ImgState.Idle;
             }
             else

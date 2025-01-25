@@ -1,4 +1,4 @@
-namespace DreamScape;
+namespace DreamScape.img;
 
 using Godot;
 using System;
@@ -71,7 +71,10 @@ public partial class DreamScapeImg : Node2D
     {
         if (State.ImgState == ImgState.New)
         {
-            GD.Print("Generating");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("Generating");
+            }
             RandomizePalette();
             for (int x = 0; x < ImgSize.X; x++)
             {
@@ -94,7 +97,10 @@ public partial class DreamScapeImg : Node2D
 
         else if (State.ImgState == ImgState.Idle)
         {
-            GD.Print("Regenerating");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("Regenerating");
+            }
 
             for (int x = 0; x < ImgSize.X; x++)
             {
@@ -116,7 +122,10 @@ public partial class DreamScapeImg : Node2D
     {
         if (State.ImgState == ImgState.Idle)
         {
-            GD.Print("Starting Fade Effect");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("Starting Fade Effect");
+            }
             State.ImgState = ImgState.Fading;
             RandomNumberGenerator rng = new RandomNumberGenerator();
             int xCoord = rng.RandiRange(0, (int)ImgSize.X - 1);
@@ -143,7 +152,7 @@ public partial class DreamScapeImg : Node2D
             }
             else
             {
-                GD.PrintErr($"Tile at {cord} not found");
+                GD.PushError($"Tile at {cord} not found");
             }
         }
     }

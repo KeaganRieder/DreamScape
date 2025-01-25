@@ -1,5 +1,7 @@
 namespace DreamScape;
 
+using DreamScape.sound;
+using DreamScape.img;
 using Godot;
 using System.Collections.Generic;
 
@@ -21,13 +23,16 @@ public partial class Main : Node
 		{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
 	};
 
+
     private FadeType fadeType;
-    private DreamScapeImg image;
     private RandomNumberGenerator rng;
+    private DreamScapeImg image;
+    private AudioPlayer audioPlayer;
 
     public Main()
     {
         Name = "DreamScapeMain";
+        audioPlayer = new AudioPlayer();
         image = DreamScapeImg.Instance;
         rng = new RandomNumberGenerator();
 
@@ -42,6 +47,7 @@ public partial class Main : Node
 
         image.Generate();
         AddChild(image);
+        AddChild(audioPlayer);
     }
 
     public override void _Ready()
@@ -57,22 +63,35 @@ public partial class Main : Node
     {
         if (Input.IsActionJustPressed("PlayAmbientMusic"))
         {
-            GD.Print("\nImg Back to Cycling\n");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("\nImg Back to Cycling\n");
+            }
 
             fadeType = FadeType.CycleFade;
             States.Instance.UpdatedFadeMode = true;
+
+            audioPlayer.LoadAudio(0);
         }
 
         if (Input.IsActionPressed("PlayAmbientMusic"))
         {
-            // GD.Print("Playing Ambient Music WIP");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("Playing Ambient Music WIP");
+            }
+            audioPlayer.PlayAudio();
         }
 
         if (Input.IsActionJustReleased("PlayAmbientMusic"))
         {
-            GD.Print("\nImg Back to default\n");
+            if (States.Instance.Debugging)
+            {
+                GD.Print("\nImg Back to default\n");
+            }
             fadeType = FadeType.DefaultFade;
             States.Instance.UpdatedFadeMode = true;
+
         }
 
         if (States.Instance.UpdatedFadeMode)
@@ -81,9 +100,19 @@ public partial class Main : Node
             {
                 States.Instance.FadeMode = fadeType;
 
-                GD.Print("Swapping Fade modes");
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("Swapping Fade modes");
+                }
                 States.Instance.UpdatedFadeMode = false;
+
+                if (fadeType == FadeType.DefaultFade)
+                {
+                    audioPlayer.StopAudio();
+                }
+                
                 image.StartFadeEffect();
+
             }
         }
 
@@ -97,7 +126,18 @@ public partial class Main : Node
         {
             if (Input.IsActionJustPressed("NewPerlinDream"))
             {
-                GD.Print("New Perlin Dream");
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("New Perlin Dream");
+                }
+
+                if (States.Instance.FadeMode == FadeType.DefaultFade)
+                {
+                    audioPlayer.LoadAudio(1);
+                    audioPlayer.PlayAudio();
+                    audioPlayer.StopAudio();
+                }
+
                 rng = new RandomNumberGenerator();
                 image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
                 image.RandomizePalette();
@@ -107,45 +147,84 @@ public partial class Main : Node
 
             else if (Input.IsActionJustPressed("NewDream"))
             {
-                GD.Print("New Dream");
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("New Dream");
+                }
+
                 rng = new RandomNumberGenerator();
                 image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
                 image.RandomizePalette();
                 image.Generate();
                 image.StartFadeEffect();
+
+                if (States.Instance.FadeMode == FadeType.DefaultFade)
+                {
+                    audioPlayer.LoadAudio(2);
+                    audioPlayer.PlayAudio();
+                    audioPlayer.StopAudio();
+                }
             }
 
             else if (Input.IsActionJustPressed("MostRecentDream"))
             {
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("Using most recent dream");
+                }
+
                 if (States.Instance.FadeMode == FadeType.CycleFade)
                 {
-                    GD.Print("New Perlin Dream");
                     rng = new RandomNumberGenerator();
                     image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
                     image.Generate();
                     image.StartFadeEffect();
                 }
+
                 else
                 {
-                    GD.Print("Using most recent dream");
                     image.StartFadeEffect();
+                    audioPlayer.LoadAudio(3);
+                    audioPlayer.PlayAudio();
+                    audioPlayer.StopAudio();
                 }
             }
 
             else if (Input.IsActionJustPressed("NewPalette"))
             {
-                GD.Print("different toned Dream");
-                image.Generate();
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("different toned Dream");
+                }
 
+                image.Generate();
                 image.StartFadeEffect();
+
+                if (States.Instance.FadeMode == FadeType.DefaultFade)
+                {
+                    audioPlayer.LoadAudio(4);
+                    audioPlayer.PlayAudio();
+                    audioPlayer.StopAudio();
+                }
             }
 
             else if (Input.IsActionJustPressed("InvertedDream"))
             {
-                GD.Print("Inverting Dream");
+                if (States.Instance.Debugging)
+                {
+                    GD.Print("Inverting Dream");
+                }
+
                 image.InvertPalette();
                 image.Generate();
                 image.StartFadeEffect();
+
+                if (States.Instance.FadeMode == FadeType.DefaultFade)
+                {
+                    audioPlayer.LoadAudio(5);
+                    audioPlayer.PlayAudio();
+                    audioPlayer.StopAudio();
+                }
             }
         }
 
