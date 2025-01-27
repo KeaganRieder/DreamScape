@@ -12,9 +12,9 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Main : Node
 {
-    public static readonly Dictionary<string, InputEvent> KeyBindings = new Dictionary<string, InputEvent>
-    {
-        {"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, // mouse click
+	public static readonly Dictionary<string, InputEvent> KeyBindings = new Dictionary<string, InputEvent>
+	{
+		{"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, // mouse click
 		{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, // makes new random img with perlin noise
 		{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}}, // randomizes frequency used by generator noise maybe make it cellular noise
 
@@ -24,210 +24,212 @@ public partial class Main : Node
 	};
 
 
-    private FadeType fadeType;
-    private RandomNumberGenerator rng;
-    private DreamScapeImg image;
-    private AudioPlayer audioPlayer;
+	private FadeType fadeType;
+	private RandomNumberGenerator rng;
+	private DreamScapeImg image;
+	private AudioPlayer audioPlayer;
 
-    public Main()
-    {
-        Name = "DreamScapeMain";
-        audioPlayer = new AudioPlayer();
-        image = DreamScapeImg.Instance;
-        rng = new RandomNumberGenerator();
+	public Main()
+	{
+		Name = "DreamScapeMain";
+		audioPlayer = new AudioPlayer();
+		image = DreamScapeImg.Instance;
+		rng = new RandomNumberGenerator();
 
-        //setting initial values for noise generator
-        var NoiseGenerator = image.NoiseGenerator;
-        NoiseGenerator.NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth;
-        NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-        NoiseGenerator.Frequency = 0.05f;
-        NoiseGenerator.FractalLacunarity = 2f;
-        NoiseGenerator.FractalOctaves = 6;
-        NoiseGenerator.FractalGain = 0.4f;
+		Input.SetMouseMode(Input.MouseModeEnum.Hidden);
 
-        image.Generate();
-        AddChild(image);
-        AddChild(audioPlayer);
-    }
+		//setting initial values for noise generator
+		var NoiseGenerator = image.NoiseGenerator;
+		NoiseGenerator.NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth;
+		NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+		NoiseGenerator.Frequency = 0.05f;
+		NoiseGenerator.FractalLacunarity = 2f;
+		NoiseGenerator.FractalOctaves = 6;
+		NoiseGenerator.FractalGain = 0.4f;
 
-    public override void _Ready()
-    {
-        foreach (var binding in KeyBindings)
-        {
-            InputMap.AddAction(binding.Key);
-            InputMap.ActionAddEvent(binding.Key, binding.Value);
-        }
-    }
+		image.Generate();
+		AddChild(image);
+		AddChild(audioPlayer);
+	}
 
-    public override void _Process(double delta)
-    {
-        if (Input.IsActionJustPressed("PlayAmbientMusic"))
-        {
-            if (States.Instance.Debugging)
-            {
-                GD.Print("\nImg Back to Cycling\n");
-            }
+	public override void _Ready()
+	{
+		foreach (var binding in KeyBindings)
+		{
+			InputMap.AddAction(binding.Key);
+			InputMap.ActionAddEvent(binding.Key, binding.Value);
+		}
+	}
 
-            fadeType = FadeType.CycleFade;
-            States.Instance.UpdatedFadeMode = true;
+	public override void _Process(double delta)
+	{
+		if (Input.IsActionJustPressed("PlayAmbientMusic"))
+		{
+			if (States.Instance.Debugging)
+			{
+				GD.Print("\nImg Back to Cycling\n");
+			}
 
-            audioPlayer.LoadAudio(0);
-        }
+			fadeType = FadeType.CycleFade;
+			States.Instance.UpdatedFadeMode = true;
 
-        if (Input.IsActionPressed("PlayAmbientMusic"))
-        {
-            if (States.Instance.Debugging)
-            {
-                GD.Print("Playing Ambient Music WIP");
-            }
-            audioPlayer.PlayAudio();
-        }
+			audioPlayer.LoadAudio(0);
+		}
 
-        if (Input.IsActionJustReleased("PlayAmbientMusic"))
-        {
-            if (States.Instance.Debugging)
-            {
-                GD.Print("\nImg Back to default\n");
-            }
-            fadeType = FadeType.DefaultFade;
-            States.Instance.UpdatedFadeMode = true;
+		if (Input.IsActionPressed("PlayAmbientMusic"))
+		{
+			if (States.Instance.Debugging)
+			{
+				GD.Print("Playing Ambient Music WIP");
+			}
+			audioPlayer.PlayAudio();
+		}
 
-        }
+		if (Input.IsActionJustReleased("PlayAmbientMusic"))
+		{
+			if (States.Instance.Debugging)
+			{
+				GD.Print("\nImg Back to default\n");
+			}
+			fadeType = FadeType.DefaultFade;
+			States.Instance.UpdatedFadeMode = true;
 
-        if (States.Instance.UpdatedFadeMode)
-        {
-            if (States.Instance.ImgState == ImgState.Idle)
-            {
-                States.Instance.FadeMode = fadeType;
+		}
 
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("Swapping Fade modes");
-                }
-                States.Instance.UpdatedFadeMode = false;
+		if (States.Instance.UpdatedFadeMode)
+		{
+			if (States.Instance.ImgState == ImgState.Idle)
+			{
+				States.Instance.FadeMode = fadeType;
 
-                if (fadeType == FadeType.DefaultFade)
-                {
-                    audioPlayer.StopAudio();
-                }
-                
-                image.StartFadeEffect();
+				if (States.Instance.Debugging)
+				{
+					GD.Print("Swapping Fade modes");
+				}
+				States.Instance.UpdatedFadeMode = false;
 
-            }
-        }
+				if (fadeType == FadeType.DefaultFade)
+				{
+					audioPlayer.StopAudio();
+				}
+				
+				image.StartFadeEffect();
 
-        States.Instance.CheckIfDoneFading();
-        base._Process(delta);
-    }
+			}
+		}
 
-    public override void _UnhandledInput(InputEvent inputEvent)
-    {
-        if (States.Instance.ImgState == ImgState.Idle)
-        {
-            if (Input.IsActionJustPressed("NewPerlinDream"))
-            {
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("New Perlin Dream");
-                }
+		States.Instance.CheckIfDoneFading();
+		base._Process(delta);
+	}
 
-                if (States.Instance.FadeMode == FadeType.DefaultFade)
-                {
-                    audioPlayer.LoadAudio(1);
-                    audioPlayer.PlayAudio();
-                    audioPlayer.StopAudio();
-                }
+	public override void _UnhandledInput(InputEvent inputEvent)
+	{
+		if (States.Instance.ImgState == ImgState.Idle)
+		{
+			if (Input.IsActionJustPressed("NewPerlinDream"))
+			{
+				if (States.Instance.Debugging)
+				{
+					GD.Print("New Perlin Dream");
+				}
 
-                rng = new RandomNumberGenerator();
-                image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-                image.RandomizePalette();
-                image.Generate();
-                image.StartFadeEffect();
-            }
+				if (States.Instance.FadeMode == FadeType.DefaultFade)
+				{
+					audioPlayer.LoadAudio(1);
+					audioPlayer.PlayAudio();
+					audioPlayer.StopAudio();
+				}
 
-            else if (Input.IsActionJustPressed("NewDream"))
-            {
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("New Dream");
-                }
+				rng = new RandomNumberGenerator();
+				image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+				image.RandomizePalette();
+				image.Generate();
+				image.StartFadeEffect();
+			}
 
-                rng = new RandomNumberGenerator();
-                image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-                image.RandomizePalette();
-                image.Generate();
-                image.StartFadeEffect();
+			else if (Input.IsActionJustPressed("NewDream"))
+			{
+				if (States.Instance.Debugging)
+				{
+					GD.Print("New Dream");
+				}
 
-                if (States.Instance.FadeMode == FadeType.DefaultFade)
-                {
-                    audioPlayer.LoadAudio(2);
-                    audioPlayer.PlayAudio();
-                    audioPlayer.StopAudio();
-                }
-            }
+				rng = new RandomNumberGenerator();
+				image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+				image.RandomizePalette();
+				image.Generate();
+				image.StartFadeEffect();
 
-            else if (Input.IsActionJustPressed("MostRecentDream"))
-            {
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("Using most recent dream");
-                }
+				if (States.Instance.FadeMode == FadeType.DefaultFade)
+				{
+					audioPlayer.LoadAudio(2);
+					audioPlayer.PlayAudio();
+					audioPlayer.StopAudio();
+				}
+			}
 
-                if (States.Instance.FadeMode == FadeType.CycleFade)
-                {
-                    rng = new RandomNumberGenerator();
-                    image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
-                    image.Generate();
-                    image.StartFadeEffect();
-                }
+			else if (Input.IsActionJustPressed("MostRecentDream"))
+			{
+				if (States.Instance.Debugging)
+				{
+					GD.Print("Using most recent dream");
+				}
 
-                else
-                {
-                    image.StartFadeEffect();
-                    audioPlayer.LoadAudio(3);
-                    audioPlayer.PlayAudio();
-                    audioPlayer.StopAudio();
-                }
-            }
+				if (States.Instance.FadeMode == FadeType.CycleFade)
+				{
+					rng = new RandomNumberGenerator();
+					image.NoiseGenerator.Seed = rng.RandiRange(0, 10000);
+					image.Generate();
+					image.StartFadeEffect();
+				}
 
-            else if (Input.IsActionJustPressed("NewPalette"))
-            {
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("different toned Dream");
-                }
+				else
+				{
+					image.StartFadeEffect();
+					audioPlayer.LoadAudio(3);
+					audioPlayer.PlayAudio();
+					audioPlayer.StopAudio();
+				}
+			}
 
-                image.Generate();
-                image.StartFadeEffect();
+			else if (Input.IsActionJustPressed("NewPalette"))
+			{
+				if (States.Instance.Debugging)
+				{
+					GD.Print("different toned Dream");
+				}
 
-                if (States.Instance.FadeMode == FadeType.DefaultFade)
-                {
-                    audioPlayer.LoadAudio(4);
-                    audioPlayer.PlayAudio();
-                    audioPlayer.StopAudio();
-                }
-            }
+				image.Generate();
+				image.StartFadeEffect();
 
-            else if (Input.IsActionJustPressed("InvertedDream"))
-            {
-                if (States.Instance.Debugging)
-                {
-                    GD.Print("Inverting Dream");
-                }
+				if (States.Instance.FadeMode == FadeType.DefaultFade)
+				{
+					audioPlayer.LoadAudio(4);
+					audioPlayer.PlayAudio();
+					audioPlayer.StopAudio();
+				}
+			}
 
-                image.InvertPalette();
-                image.Generate();
-                image.StartFadeEffect();
+			else if (Input.IsActionJustPressed("InvertedDream"))
+			{
+				if (States.Instance.Debugging)
+				{
+					GD.Print("Inverting Dream");
+				}
 
-                if (States.Instance.FadeMode == FadeType.DefaultFade)
-                {
-                    audioPlayer.LoadAudio(5);
-                    audioPlayer.PlayAudio();
-                    audioPlayer.StopAudio();
-                }
-            }
-        }
+				image.InvertPalette();
+				image.Generate();
+				image.StartFadeEffect();
 
-        base._UnhandledInput(inputEvent);
-    }
+				if (States.Instance.FadeMode == FadeType.DefaultFade)
+				{
+					audioPlayer.LoadAudio(5);
+					audioPlayer.PlayAudio();
+					audioPlayer.StopAudio();
+				}
+			}
+		}
+
+		base._UnhandledInput(inputEvent);
+	}
 }

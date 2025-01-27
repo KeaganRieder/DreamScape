@@ -17,7 +17,7 @@ public static class ImgConstants
 	public const float NeighborDelay = 0.2f;
 
 	//generation values
-	public const int ImgWidth = 20;
+	public const int ImgWidth = 22;
 	public const int imgHeight = 12;
 
 	public const int CellSize = 64;
