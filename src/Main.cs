@@ -14,14 +14,28 @@ public partial class Main : Node
 {
 	public static readonly Dictionary<string, InputEvent> KeyBindings = new Dictionary<string, InputEvent>
 	{
-		{"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, // mouse click
-		{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, // makes new random img with perlin noise
-		{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}}, // randomizes frequency used by generator noise maybe make it cellular noise
+		// mouse click, - plays ambient music and creates an image that stays
+		// and allows for other inputs to act differently, by altering the currently display 
+		// image
+		{"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, 
 
-		{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}}, // uses last generated img
-		{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, // swaps to a Light palette WIP
-		{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
-		{"Quit", new InputEventKey{PhysicalKeycode = Key.Escape}}, // swaps to a dark palette WIP
+		// makes new random img with perlin noise
+		{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, 
+
+		// randomizes frequency used by generator noise maybe make it cellular noise
+		{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}},
+
+ 		// uses last generated img
+		{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}},
+
+		// swaps to a Light palette
+		{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, 
+
+		// inverts the imgs colors
+		{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, 
+
+		// exits out of the program
+		{"Quit", new InputEventKey{PhysicalKeycode = Key.Escape}}, 
 	};
 
 
