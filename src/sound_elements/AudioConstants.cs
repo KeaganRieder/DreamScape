@@ -12,7 +12,7 @@ public static class AudioConstants
     public static string[] Sounds = new string[]
     {
         "ambient_music", "new_perlin_dream", "new_dream",
-        "most_recent_dream", "new palette", "inverted_dream"
+        "most_recent_dream", "new_palette", "inverted_dream"
     };
 }
 

@@ -26,17 +26,40 @@ public partial class AudioPlayer : AudioStreamPlayer
 	/// </summary>
 	public void LoadAudio(int soundID)
 	{
-		string path = $"assets/sounds/{AudioConstants.Sounds[soundID]}.mp3";
+		RandomNumberGenerator rng = new RandomNumberGenerator();
+		int soundType = rng.RandiRange(0, 1);
+		string path = $"assets/sounds/{AudioConstants.Sounds[soundID]}_{soundType}.mp3";
 
 		if (File.Exists(path))
 		{
 			var audioStream = GD.Load<AudioStream>(path);
 			Stream = audioStream;
-			defaultVolume = 0;
+			if ((soundID == 5 && soundType == 0) || (soundID == 1 && soundType == 0))
+			{
+				defaultVolume = -10f;
+				// GD.Print($"inverted_dream {defaultVolume}");
+			}
+			else
+			{
+				defaultVolume = 0;
+			}
+
 		}
+
+
 		else
 		{
-			GD.PushError($"Audio file at path {path} not found");
+			path = $"assets/sounds/{AudioConstants.Sounds[soundID]}_0.mp3";
+			if (File.Exists(path))
+			{
+				var audioStream = GD.Load<AudioStream>(path);
+				Stream = audioStream;
+				defaultVolume = 0;
+			}
+			else
+			{
+				GD.PushError($"Audio file at path {path} not found");
+			}
 		}
 	}
 
@@ -75,7 +98,7 @@ public partial class AudioPlayer : AudioStreamPlayer
 	/// </summary>
 	private void FadeAudio()
 	{
-		if (VolumeDb > -35)
+		if (VolumeDb > -40)
 		{
 			VolumeDb -= AudioConstants.FadeOutAmt;
 

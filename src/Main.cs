@@ -21,6 +21,7 @@ public partial class Main : Node
 		{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}}, // uses last generated img
 		{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, // swaps to a Light palette WIP
 		{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, // swaps to a dark palette WIP
+		{"Quit", new InputEventKey{PhysicalKeycode = Key.Escape}}, // swaps to a dark palette WIP
 	};
 
 
@@ -112,7 +113,7 @@ public partial class Main : Node
 				{
 					audioPlayer.StopAudio();
 				}
-				
+
 				image.StartFadeEffect();
 
 			}
@@ -228,6 +229,11 @@ public partial class Main : Node
 					audioPlayer.StopAudio();
 				}
 			}
+
+		}
+		if (Input.IsActionJustPressed("Quit"))
+		{
+			GetTree().Quit();
 		}
 
 		base._UnhandledInput(inputEvent);
