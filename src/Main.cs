@@ -22,13 +22,13 @@ public partial class Main : Node
 		// makes new random img with perlin noise
 		{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, 
 
-		// randomizes frequency used by generator noise maybe make it cellular noise
+		// randomizes frequency used by generator noise
 		{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}},
 
  		// uses last generated img
 		{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}},
 
-		// swaps to a Light palette
+		// randomizes the color pallet
 		{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, 
 
 		// inverts the imgs colors

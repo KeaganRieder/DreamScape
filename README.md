@@ -18,9 +18,9 @@ and virtual outputs, engaging both your group and the audience in imaginative an
 ways
 
 #### Key Goals: 
-• Experiment with physical and virtual affordances. 
-• Create an interactive work that embodies the theme Tangible & Ineffable. 
-• Showcase curiosity, imagination, and critical thinking in both process and outcome.
+- Experiment with physical and virtual affordances. 
+- Create an interactive work that embodies the theme Tangible & Ineffable. 
+- Showcase curiosity, imagination, and critical thinking in both process and outcome.
 
 ## Assignment Display
 The assignment was split into two half a programming and physical elements. the physical element was a cloud which made up of different segments that allowed for a user to interact. 
@@ -34,26 +34,26 @@ The program can be used with out the physical element. this requires downloading
 
 once you the program in godot you then can hit the compile and play, to run the program. The controls are as followed:
 ```C#
-    // mouse click, - plays ambient music and creates an image that stays
-	// and allows for other inputs to act differently, by altering the currently display 
-	// image
-	{"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, 
+// mouse click, - plays ambient music and creates an image that stays
+// and allows for other inputs to act differently, by altering the currently display 
+// image
+{"PlayAmbientMusic",new InputEventMouseButton { ButtonIndex = MouseButton.Left}}, 
 
-	// makes new random img with perlin noise
-	{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, 
+// makes new random img with perlin noise
+{"NewPerlinDream", new InputEventKey{PhysicalKeycode = Key.Down}}, 
 
-	// randomizes frequency used by generator noise maybe make it cellular noise
-	{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}},
+// randomizes frequency used by generator noise 
+{"NewDream",  new InputEventKey{PhysicalKeycode = Key.Up}},
 
- 	// uses last generated img
-	{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}},
+// uses last generated img
+{"MostRecentDream", new InputEventKey{PhysicalKeycode = Key.Space}},
 
-	// swaps to a Light palette
-	{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, 
+// randomizes the color pallet
+{"NewPalette",  new InputEventKey{PhysicalKeycode = Key.Left}}, 
 
-	// inverts the imgs colors
-	{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, 
+// inverts the images colors
+{"InvertedDream", new InputEventKey{PhysicalKeycode = Key.Right}}, 
 
-	// exits out of the program
-	{"Quit", new InputEventKey{PhysicalKeycode = Key.Escape}}, 
+// exits out of the program
+{"Quit", new InputEventKey{PhysicalKeycode = Key.Escape}}, 
 ```
