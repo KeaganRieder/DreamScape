@@ -25,12 +25,18 @@ ways
 ## Assignment Display
 The assignment was split into two half a programming and physical elements. the physical element was a cloud which made up of different segments that allowed for a user to interact. 
 
+setting it up:
 ![Project Set up](/docs/IMG_4418.jpg)
 
 These interactions were then turned into computer input by a Makey Makey, which then sent the input to the program and used to provide feedback to the user, in the form of visual changes to an image that was display on a project, and random sound playing from speakers.
 
+The following are videos of the code feedback to the interactions with parts of the cloud:
+![Ex1](/docs/Version_5_Ex-HoldingMouse.mp4)
+
+![Ex2](/docs/Version_5_Ex-NotHoldingMouse.mp4)
+
 ## How To Use
-The program can be used with out the physical element. this requires downloading the program and opening in [godot](https://godotengine.org/download/windows/), if you need to download it ensure it's the .net version.
+The program can be used with out the physical element. this requires downloading the program and opening in [Godot](https://godotengine.org/download/windows/), if you need to download it ensure it's the .net version.
 
 once you the program in godot you then can hit the compile and play, to run the program. The controls are as followed:
 ```C#
